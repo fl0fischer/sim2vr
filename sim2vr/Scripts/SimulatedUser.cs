@@ -18,7 +18,7 @@ namespace UserInTheBox
         private Texture2D _tex;
         private bool _sendReply;
         private byte[] _previousImage;
-        private bool _debug = false;
+        [SerializeField] private bool _debug = false;
 
         public void Awake()
         {
