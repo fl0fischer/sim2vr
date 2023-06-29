@@ -133,7 +133,7 @@ GameObject:
   m_Component:
   - component: {fileID: 333135315762177177}
   m_Layer: 0
-  m_Name: UserInTheBox
+  m_Name: sim2vr
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
