@@ -44,12 +44,15 @@ namespace UserInTheBox
                 GenerateSubjectFolder();
             }
             
-            // Generate a new experiment folder based on timestamp
-            string time = DateTime.Now.ToString("HH-mm-ss");
-            
-            // Create a folder for this experiment
-            _experimentFolder = Path.Combine(_subjectFolder, time + "-" + experimentName);
-            Directory.CreateDirectory(_experimentFolder);
+            if (_experimentFolder == null)
+            {
+                // Generate a new experiment folder based on timestamp
+                string time = DateTime.Now.ToString("HH-mm-ss");
+                
+                // Create a folder for this experiment
+                _experimentFolder = Path.Combine(_subjectFolder, time + "-" + experimentName);
+                Directory.CreateDirectory(_experimentFolder);
+            }
         }
 
         public void Initialise(string key)
