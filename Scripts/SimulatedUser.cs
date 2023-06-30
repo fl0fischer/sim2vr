@@ -191,9 +191,9 @@ namespace UserInTheBox
             _server?.Close();
         }
         
-        public bool isFixedPort()
+        public bool getPort()
         {
-            return _fixedport;
+            return _port;
         }
     }
 }
