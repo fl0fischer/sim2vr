@@ -18,19 +18,15 @@ namespace UserInTheBox
         private Texture2D _tex;
         private bool _sendReply;
         private byte[] _previousImage;
-        [SerializeField] private bool _debug = false;
+        // [SerializeField] private bool _debug = false;
 
         public void Awake()
         {
-            if (_debug)
-            {
-                enabled = true;
-            }
-            else
-            {
-                // Check if simulated user is enabled
-                enabled = UitBUtils.GetOptionalArgument("simulated");
-            }
+            // Get server port
+            _port = UitBUtils.GetOptionalKeywordArgument("port", "5555");
+
+            // Check if simulated user is enabled
+            enabled = UitBUtils.GetOptionalArgument("simulated");
 
             if (enabled)
             {
@@ -62,16 +58,14 @@ namespace UserInTheBox
 
         public void Start()
         {
-            // Get port for server
+            // Check whether default debug port is used
             int timeOutSeconds;
-            if (_debug)
+            if (_port == "5555")
             {
-                _port = "5555";
                 timeOutSeconds = 600;
             }
             else
             {
-                _port = UitBUtils.GetKeywordArgument("port");
                 timeOutSeconds = 60;
             }
             
@@ -197,9 +191,9 @@ namespace UserInTheBox
             _server?.Close();
         }
         
-        public bool isDebug()
+        public bool isFixedPort()
         {
-            return _debug;
+            return _fixedport;
         }
     }
 }
