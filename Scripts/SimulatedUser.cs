@@ -191,7 +191,7 @@ namespace UserInTheBox
             _server?.Close();
         }
         
-        public bool getPort()
+        public string getPort()
         {
             return _port;
         }
