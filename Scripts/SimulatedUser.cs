@@ -18,7 +18,7 @@ namespace UserInTheBox
         private Texture2D _tex;
         private bool _sendReply;
         private byte[] _previousImage;
-        // [SerializeField] private bool _debug = false;
+        [SerializeField] private bool simulated;
 
         public void Awake()
         {
@@ -26,7 +26,7 @@ namespace UserInTheBox
             _port = UitBUtils.GetOptionalKeywordArgument("port", "5555");
 
             // Check if simulated user is enabled
-            enabled = UitBUtils.GetOptionalArgument("simulated");
+            enabled = UitBUtils.GetOptionalArgument("simulated") | simulated;
 
             if (enabled)
             {
