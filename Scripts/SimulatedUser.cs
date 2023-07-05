@@ -126,7 +126,13 @@ namespace UserInTheBox
             // Check if we should quit the application, or reset environment
             if (state.quitApplication)
             {
-                Application.Quit();
+                #if UNITY_EDITOR
+                    // Application.Quit() does not work in the editor so
+                    // UnityEditor.EditorApplication.isPlaying need to be set to false to end the game
+                    UnityEditor.EditorApplication.isPlaying = false;
+                #else
+                    Application.Quit();
+                #endif
             }
             else if (state.reset)
             {
@@ -139,6 +145,11 @@ namespace UserInTheBox
             mainCamera.transform.SetPositionAndRotation(state.headsetPosition, state.headsetRotation);
             leftHandController.SetPositionAndRotation(state.leftControllerPosition, state.leftControllerRotation);
             rightHandController.SetPositionAndRotation(state.rightControllerPosition, state.rightControllerRotation);
+
+            if (env.overrideHeadsetOrientation)
+            {
+                mainCamera.transform.rotation = env.simulatedUserHeadsetOrientation;
+            }
         }
 
         public void LateUpdate()

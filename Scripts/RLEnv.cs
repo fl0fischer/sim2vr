@@ -18,6 +18,9 @@ namespace UserInTheBox
 
         protected bool _logging;
 
+        public bool overrideHeadsetOrientation = false;
+        public Quaternion simulatedUserHeadsetOrientation;
+
         public void Start()
         {
             // Don't run RLEnv if it is not needed
