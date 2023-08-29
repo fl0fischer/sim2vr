@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using Newtonsoft.Json;
 using UnityEngine;
 using NetMQ;
 using NetMQ.Sockets;
@@ -37,6 +39,23 @@ namespace UserInTheBox
         public float reward;
         public byte[] image;
         public float timeFeature;
+        // public Dictionary<string, float> logDict;
+        public string logDict;  //json dict
+    }
+
+ [Serializable]
+ public class SerializableKeyValuePair<TKey, TValue>
+    {
+        public SerializableKeyValuePair()
+        {
+        }
+        public SerializableKeyValuePair(TKey key, TValue value)
+        {
+            Key = key;
+            Value = value;
+        }
+        public TKey Key { get; set; }
+        public TValue Value { get; set; }
     }
 
     public class ZmqServer
@@ -95,13 +114,15 @@ namespace UserInTheBox
             state = JsonUtility.FromJson<TMessage>(strMessage);
         }
 
-        public void SendObservation(bool isFinished, float reward, byte[] image, float timeFeature)
+        public void SendObservation(bool isFinished, float reward, byte[] image, float timeFeature, Dictionary<string, object> logDict)
         {
             // Populate reply
             _gameObservation.isFinished = isFinished;
             _gameObservation.reward = reward;
             _gameObservation.image = image;
             _gameObservation.timeFeature = timeFeature;
+
+            _gameObservation.logDict = JsonConvert.SerializeObject(logDict);
 
             // Send to simulator
             _socket.SendFrame(JsonUtility.ToJson(_gameObservation));
@@ -115,7 +136,7 @@ namespace UserInTheBox
             Debug.Log("Connection confirmed");
             
             // Send an empty message to confirm connection
-            SendObservation(false, 0, null, -1);
+            SendObservation(false, 0, null, -1, null);
 
             return _timeOptions;
         }

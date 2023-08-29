@@ -188,8 +188,11 @@ namespace UserInTheBox
             // Get elapsed time (scaled [-1, 1])
             var timeFeature = env.GetTimeFeature();
 
+            // Get dictionary with additional objects to be logged/stored
+            var logDict = env.GetLogDict();
+
             // Send observation to client
-            _server.SendObservation(isFinished, reward, _previousImage, timeFeature);
+            _server.SendObservation(isFinished, reward, _previousImage, timeFeature, logDict);
         }
         
         private void OnDestroy()

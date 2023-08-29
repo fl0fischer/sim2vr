@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace UserInTheBox
@@ -17,6 +18,7 @@ namespace UserInTheBox
         protected bool _isFinished;
 
         protected bool _logging;
+        protected Dictionary<string, object> _logDict;
 
         public bool overrideHeadsetOrientation = false;
         public Quaternion simulatedUserHeadsetOrientation;
@@ -37,6 +39,8 @@ namespace UserInTheBox
 
             // Enable logging if necessary
             logger.enabled = _logging;
+
+            _logDict = new Dictionary<string, object>();
         }
 
         public void Update()
@@ -56,6 +60,11 @@ namespace UserInTheBox
         public bool IsFinished()
         {
             return _isFinished;
+        }
+
+        public Dictionary<string, object> GetLogDict()
+        {
+            return _logDict;
         }
 
         public abstract void InitialiseGame();
