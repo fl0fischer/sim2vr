@@ -42,7 +42,7 @@ namespace UserInTheBox
                 mainCamera.gameObject.AddComponent<RenderShader>();
 
                 // Set camera parameters, such as field of view, near/far clipping planes
-                mainCamera.fieldOfView = 120;
+                mainCamera.fieldOfView = 90;
                 mainCamera.nearClipPlane = 0.01f;
                 mainCamera.farClipPlane = 10;
 
