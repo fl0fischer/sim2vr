@@ -38,9 +38,9 @@ namespace UserInTheBox
                 mainCamera.gameObject.AddComponent<RenderShader>();
 
                 // Set camera parameters, such as field of view, near/far clipping planes
-                mainCamera.fieldOfView = 60;
+                mainCamera.fieldOfView = 90;
                 mainCamera.nearClipPlane = 0.01f;
-                mainCamera.farClipPlane = 3;
+                mainCamera.farClipPlane = 10;
 
                 // Disable the TrackedPoseDriver as well, otherwise XR Origin will always
                 // try to reset position of camera to (0,0,0)?
