@@ -124,7 +124,7 @@ namespace UserInTheBox
 
             _gameObservation.logDict = JsonConvert.SerializeObject(logDict);
 
-            // Send to simulator
+            // Send to User-in-the-Box simulation in MuJoCo
             _socket.SendFrame(JsonUtility.ToJson(_gameObservation));
         }
         

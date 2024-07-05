@@ -48,7 +48,7 @@ namespace UserInTheBox
             // Update reward
             CalculateReward();
             
-            // Update finished
+            // Check if episode has terminated
             UpdateIsFinished();
         }
         

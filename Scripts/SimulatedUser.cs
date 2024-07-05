@@ -30,7 +30,7 @@ namespace UserInTheBox
 
             if (enabled)
             {
-                // Disable camera; we will call the rendering manually?
+                // Disable camera; we will call the rendering manually
                 mainCamera.enabled = false;
                 
                 // Make sure depth is rendered/stored, and attach a component to camera to handle RGB-D rendering
@@ -109,8 +109,11 @@ namespace UserInTheBox
         
         public void Update()
         {
+            // Get previously received simulation state
             _sendReply = false;
             SimulatedUserState previousState = _server.GetSimulationState();
+            
+            // Check if we should advance Unity simulation
             if (previousState != null && Time.fixedTime < previousState.nextTimestep)
             {
                 return;
@@ -142,6 +145,7 @@ namespace UserInTheBox
         
         private void UpdateAnchors(SimulatedUserState state)
         {
+            // Update camera and controller transformations based on the MuJoCo state
             mainCamera.transform.SetPositionAndRotation(state.headsetPosition, state.headsetRotation);
             leftHandController.SetPositionAndRotation(state.leftControllerPosition, state.leftControllerRotation);
             rightHandController.SetPositionAndRotation(state.rightControllerPosition, state.rightControllerRotation);

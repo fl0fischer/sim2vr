@@ -20,12 +20,11 @@ public class Recorder : MonoBehaviour
     private string _mainCameraFolder;
     private string _resolution;
     private bool _debug = false;
-    //public TargetArea targetArea;
 
     private void Awake()
     {
         
-        // print input arguments
+        // Print input arguments
         var args = System.Environment.GetCommandLineArgs();
         for (int i = 0; i < args.Length; i++)
         {
@@ -34,12 +33,14 @@ public class Recorder : MonoBehaviour
         
         if (_debug)
         {
+            // Defaults for debugging
             enabled = true;
             _baseImageFolder = Path.Combine(Application.persistentDataPath, "recording/");
             _resolution = "1280x960";
         }
         else
         {
+            // Check if we should record
             enabled = UitBUtils.GetOptionalArgument("record");
         }
 
@@ -50,6 +51,7 @@ public class Recorder : MonoBehaviour
             _resolution = "1280x960";
             if (enabled && !_debug)
             {
+                // Create output folder
                 _baseImageFolder = Path.Combine(UitBUtils.GetKeywordArgument("outputFolder"), "recording/");
                 _resolution = UitBUtils.GetOptionalKeywordArgument("resolution", _resolution);
             }
@@ -87,12 +89,7 @@ public class Recorder : MonoBehaviour
 
         // Get the env camera
         _envCamera = GetComponent<Camera>();
-        
-        // Set env camera to look at target area
-        //_envCamera.transform.position = targetArea.transform.position;
-        //_envCamera.transform.Translate(0.5f, 0f, -0.5f);
-        //_envCamera.transform.LookAt(targetArea.transform);
-        
+                
         // Get headset camera
         _mainCamera = simulatedUser.mainCamera;
         

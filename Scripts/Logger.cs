@@ -14,9 +14,11 @@ namespace UserInTheBox
 
         public void Awake()
         {
+            // Get output folder if one is defined
             string outputFolder = UitBUtils.GetOptionalKeywordArgument("outputFolder", 
                 Application.persistentDataPath);
-            
+
+            // Create the log folder
             _baseLogFolder = Path.Combine(outputFolder, "logging/" + DateTime.Now.ToString("yyyy-MM-dd"));
             Debug.Log("Logs will be saved to " + _baseLogFolder);
             
@@ -89,13 +91,11 @@ namespace UserInTheBox
             }
         }
 
-        // public async void Push(string key, string msg)
         public void Push(string key, string msg)
         {
-            // Do we want async here? Does this even work in Unity?
+            // Push the msg to the log file specified by key
             if (_files.ContainsKey(key))
             {
-                // await _files[key].WriteLineAsync(msg);
                 _files[key].WriteLine(msg);
             }
         }
