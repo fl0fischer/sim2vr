@@ -11,7 +11,7 @@ Paper link: [SIM2VR: Towards Automated Biomechanical Testing in VR (UIST2024)](t
 
 SIM2VR requires that the Unity application has an OpenXR plugin (min. version 1.5.3) to handle the VR device interaction. For the user simulation, any simulated user instance created within the UitB framework can be used. Note that this requires the biomechanical model to be implemented in the [MuJoCo physics engine](https://mujoco.org/).
 
-The current focus of SIM2VR is on movement-based VR interaction using a VR controller and an HMD. Since the UitB framework only includes visual and proprioceptive sensor modalities, SIM2VR is currently limited to the transmission of visual output signals from the VR application to the simulated user. However, we plan to support other feedback modalities such as auditory and haptic output in the future.
+The current focus of SIM2VR is on movement-based VR interaction using VR controllers and an HMD. Since the UitB framework only includes visual and proprioceptive sensor modalities, SIM2VR is currently limited to the transmission of visual output signals from the VR application to the simulated user. However, we plan to support other feedback modalities such as auditory and haptic output in the future.
 
 
 ## Extending the UitB Framework
@@ -24,63 +24,60 @@ SIM2VR provides two new components to the UitB framework -- **UnityEnv** and **U
 
 - UnityHeadset is a UitB perception module that receives the visual observation from the Unity application through the UnityEnv module. UnityHeadset is a simple perception module that can e.g. filter color channels and stack multiple observations to allow the control policy to infer movement.
 
-- SIM2VR Asset handles the communication with the UnityEnv task module, and provides an RLEnv class. This class must be inherited and implemented separately for each Unity application. All necessary functionality required for the RL training (e.g. proper initialisation and reseting, as well as the reward function) need to be defined within the inherited class.
+- SIM2VR Asset handles the communication with the UnityEnv task module, and provides an RLEnv class. This class must be inherited and implemented separately for each Unity application. All necessary functionality required for the RL training (e.g. proper initialisation and resetting, as well as the reward function) need to be defined within the inherited class.
 
 
 ## Step-by-Step Guide
 
 In the following, we demonstrate how SIM2VR can be used to generate user simulations for a given Unity application.
-As an example, we consider the [Beat Saber](https://beatsaber.com/)-style game implemented in the [VR Beats Kit](https://assetstore.unity.com/packages/templates/systems/vr-beats-kit-168243), which is freely available on the Unity Asset Store (from here on referred to as _VR Beats_).
+As an example, we consider the Beat Saber-style game implemented in the [VR Beats Kit](https://assetstore.unity.com/packages/templates/systems/vr-beats-kit-168243), which is freely available on the Unity Asset Store.
 
 
-### Step 0: Initialisation
+### Step 1: Initialisation
 
-0. Set up your Unity project for VR development with OpenXR. Follow e.g. [this video](https://www.youtube.com/watch?v=_WlykP-tYZg). Most importantly, you need to install the _OpenXR Plugin_ (min version 1.5.3) and _XR Interaction Toolkit_ through the Package Manager (_Window_ -> _Package Manager_).
+1. Set up your Unity project for VR development with OpenXR. Follow e.g. [this video](https://www.youtube.com/watch?v=_WlykP-tYZg). Most importantly, you need to install the _OpenXR Plugin_ (min version 1.5.3) and _XR Interaction Toolkit_ through the Package Manager (_Window_ -> _Package Manager_).
 
-1. Clone or download this repository, and import the _"sim2vr.unitypackage"_ into your Unity project (_Assets_ -> _Import Package_ -> _Custom Package ..._).
+2. Clone or download this repository, and import the _"sim2vr.unitypackage"_ into your Unity project (_Assets_ -> _Import Package_ -> _Custom Package ..._).
 
-1. Add the _XR Origin_ rig through _GameObject_ -> _XR_ -> _XR Origin (Action-based)_
+3. Add the _XR Origin_ rig through _GameObject_ -> _XR_ -> _XR Origin (Action-based)_
 
-2. Add the _sim2vr_ prefab as a game object into the desired scene.
+4. Add the _sim2vr_ prefab as a game object into the desired scene.
 
-3. Connect the  _SimulatedUser_ parameters to the _LeftHand Controller_ and _RightHand Controller_ and _Main Camera_ of the _XR Origin_ rig, and to the _RLEnv_ of the _sim2vr_ game object.
+5. Connect the  _SimulatedUser_ fields to the _LeftHand Controller_, _RightHand Controller_ and _Main Camera_ of the _XR Origin_ rig, and to the _RLEnv_ of the _sim2vr_ game object.
 
 
-### Step 1: Defining the Game Reward and Reset
+### Step 2: Defining the Game Reward and Reset
 
-To train a Simulated User interact with the Unity application, appropriate reward and reset methods need to be defined. For this purpose, an application-specific class must be inherited from the _RLEnv_ class provided by the SIM2VR asset. Note that all game objects and variables relevant for the reward calculation must be accessible from this class. For example, if the distance of a game object to the controller is used as a reward, the game object's and controller's positions should be fields of this class.
+To train a simulated user interact with the Unity application, appropriate reward and reset methods need to be defined. For this purpose, an application-specific class must be inherited from the _RLEnv_ class provided by the SIM2VR asset. Note that all game objects and variables relevant for the reward calculation must be accessible from this class. For example, if the distance of a game object to the controller is used as a reward, the game object's and controller's positions should be fields of this class.
 
 The task-specific reward needs to be computed by the method _CalculateReward_ and stored in the variable _\_reward_. If a game score is provided by the VR application, this score can be directly used as reward (note that game scores typically accumulate points throughout the round, so the reward signal should be set to the increase in that score since the last frame). If necessary, the typically sparse game reward can be augmented by additional, more sophisticated terms, as described in the accompanying paper. In the VR Beats game, a player receives rewards for hitting approaching boxes. Each hit is worth 50-200 points, depending on the hit speed and direction. As the rewards accumulate throughout the game play, we use the difference between successive frames as the RL training reward.
 
-The method _Reset_ needs to ensure that the entire scene is reset to a (reproducible) initial state at the end of each round (i.e., RL training episode). This usually includes the destruction of game objects created during runtime and resetting private variables required to compute the game reward. All code related to resetting the game reward should be defined in the method _InitialiseReward_. Preparations for the next round, such as choosing a game level or defining variables required for the reward calculations, can also be defined here. Actions and settings that should be taken only once when starting the game can be defined in the method _InitialiseApplication_. For the VR Beats game, it is sufficient to simply invoke the existing _onRestart_ game event and set the current game score for reward calculation to 0 in the method _Reset_, which triggers the restart of the level in the _VR\_BeatManager_ and the _ScoreManager_.
+The method _Reset_ needs to ensure that the entire scene is reset to a (reproducible) initial state at the end of each round (i.e., RL training episode). This usually includes the destruction of game objects created during runtime and resetting variables required to compute the game reward. All code related to resetting the game reward should be defined in the method _InitialiseReward_. Preparations for the next round, such as choosing a game level or defining variables required for the reward calculations, can also be defined here. Actions and settings that should be taken only once when starting the game can be defined in the method _InitialiseApplication_. For the VR Beats game, it is sufficient to simply invoke the existing _onRestart_ game event, which triggers the restart of the level in the _VR\_BeatManager_ and the _ScoreManager_, and set the current game score for reward calculation to 0 in the method _Reset_
 
-Finally, the Simulated User needs to be informed about whether the current episode has ended, i.e., the variable _\_isFinished_ needs to be updated accordingly within the method _UpdateIsFinished_. This is the approapriate method for logging other variables of interest as well, by saving them into the _\_logDict_ dictionary, which will be then uploaded into Weights&Biases. For the Beats VR game, we can make use of the method _getIsGameRunning_ of the _VR\_BeatManager_ instance to track whether the episode has ended.
-
-The _GetTimeFeature_ method can be implemented to pass information related to elapsed time or time remaining in the episode to the Simulated User. 
+Finally, the simulated user needs to be informed about whether the current episode has ended, i.e., the variable _\_isFinished_ needs to be updated accordingly within the method _UpdateIsFinished_. This is the approapriate method for logging other variables of interest as well, by saving them into the _\_logDict_ dictionary, which will be then uploaded into Weights&Biases. In the Beats VR game, we make use of the method _getIsGameRunning_ of the _VR\_BeatManager_ instance to track whether the episode has ended.
 
 
-### Step 2: Further Adjustments
+### Step 3: Further Adjustments
 
-Since including an application- and task-dependent time feature (i.e., information regarding elapsed time or time remaining in the episode) as "stateful" information in the observation may help in training the Simulated User, the RLEnv class provides a method _GetTimeFeature_ to define this time feature. Note that implementing this method for deterministic environments may lead to the Simulated User exploiting this information instead of e.g. relying on visual perceptions. As the Beats VR game is such a deterministic environment, we did not define the time feature.
+Since including an application- and task-dependent time feature (i.e., information regarding elapsed time or time remaining in the episode) as "stateful" information in the observation may help in training the simulated user, the RLEnv class provides a method _GetTimeFeature_ to define this time feature. Note that implementing this method for deterministic environments may lead to the simulated user exploiting this information instead of e.g. relying on visual perceptions. As the Beats VR game is such a deterministic environment, we did not define the time feature.
 
 Often, a Unity application commences with an initial scene, such as a menu, rather than directly starting the game. As SIM2VR does not provide a mechanism to switch scenes, this needs to be manually implemented. If possible, this should be implemented in the _Reset_ function, otherwise, the application source code may need to be modified.
 
-As the biomechanical model, we use a bimanual version of the [_MoBL__ARMS_ model](https://github.com/aikkala/user-in-the-box/tree/main/uitb/bm_models/mobl_arms_bimanual_motor). Furthermore, to speed up the training, we replaced the muscle actuators with joint-wise torque actuators. Additionally, the Beats VR game includes walls that approach the player and must be dodged. As _MoBL__ARMS_ model is a static upper body models, we chose to play only the first 10 seconds of the game, which do not contain these walls. The first 10 seconds include four boxes that approach the player and must be hit; if a box passes by the player without a hit, the game terminates.
+As the biomechanical model, we use a bimanual version of the [_MoBL\_ARMS_ model](https://github.com/aikkala/user-in-the-box/tree/main/uitb/bm_models/mobl_arms_bimanual_motor). Furthermore, to speed up the training, we replaced the muscle actuators with joint-wise torque actuators. Additionally, the Beats VR game includes walls that approach the player and must be dodged. As _MoBL\_ARMS_ model is a static upper body model, we chose to play only the first 10 seconds of the game, which do not contain these walls. The first 10 seconds include four boxes that approach the player and must be hit; if a box passes by the player without a hit, the game terminates.
 
 The _Logger_ is optional and can be used to log individual trials, for example, when collecting data from a user study. It needs to be defined separately for each application, as the logged variables will be different.
 
 
-### Step 3: Building the Unity Application
+### Step 4: Building the Unity Application
 
-From the resulting Unity project augmented by the SIM2VR scripts and game objects, a standalone Unity Application can be built. This application is then used as interaction environment for the UitB Simulated User during training.
+From the resulting Unity project augmented by the SIM2VR scripts and game objects, a standalone Unity Application can be built. This application is then used as interaction environment for the UitB simulated user during training.
 
 
-### Step 4: Defining the Simulated User in UitB
+### Step 5: Defining the Simulated User in UitB
 
-After preparing the VR Interaction environment for running user simulations, a Simulated User instance needs to be created in UitB. 
+After preparing the VR Interaction environment for running user simulations, a simulator needs to be created in UitB. 
 
-All relevant information can be defined in the YAML config file (see [here](https://github.com/aikkala/user-in-the-box/tree/main?tab=readme-ov-file#building-a-simulator)). The config file used for the Beats VR game can be found [here](https://github.com/aikkala/user-in-the-box/blob/main/uitb/configs/mobl_arms_beatsvr_bimanual.yaml)
-This mainly involves:
+All relevant information can be defined in the YAML config file (see [here](https://github.com/aikkala/user-in-the-box/tree/main?tab=readme-ov-file#building-a-simulator)). The config file used for the Beats VR game can be found [here](https://github.com/aikkala/user-in-the-box/blob/main/uitb/configs/mobl_arms_beatsvr_bimanual.yaml). Defining the YAML mainly involves:
 - selecting a biomechanical user model (_bm\_model_), including the effort model (_effort\_model_) and effort cost weight (_weight_)
 - selecting perception modules, including the  _vision.UnityHeadset_  module provided by SIM2VR (_perception\_modules_)
 - providing the path of the standalone Unity Application to interact with (_unity\_executable_)
@@ -95,7 +92,7 @@ Other optional parameters include:
 For the Beats VR game, we use the _MoblArmsBimanualMotor_ biomechanical model with neural effort costs, which penalize the sum of the squared muscle control signals at each time step. As perception modules, we use the default proprioception module and the _UnityHeadset_ vision module provided by SIM2VR. The former allows the simulated user to infer joint angles, velocities and accelerations, as well as muscle activations and index finger position. The latter is configured to include red color and depth channels of the RGB-D image, and stacked with a delayed (0.2 seconds prior) visual observation to allow the control policy to distinguish between left and right arm targets, and to infer object movement.
 
 
-### Step 5: Training and Evaluation
+### Step 6: Training and Evaluation
 
 The training can then be started by running the UitB Python script [_uitb/train/trainer.py_](https://github.com/aikkala/user-in-the-box/blob/main/uitb/train/trainer.py) and passing the configuration file as an argument.
 
@@ -108,15 +105,15 @@ For the Beats VR game, we trained three simulated users with neural effort cost 
 TODO: add videos
 
 ## Contributors
-Florian Fischer*
-Aleksi Ikkala*
-Markus Klar
-Arthur Fleig
-Miroslav Bachinski
-Roderick Murray-Smith
-Perttu Hämäläinen
-Antti Oulasvirta
-Jörg Müller
+Florian Fischer*  
+Aleksi Ikkala*  
+Markus Klar  
+Arthur Fleig  
+Miroslav Bachinski  
+Roderick Murray-Smith  
+Perttu Hämäläinen  
+Antti Oulasvirta  
+Jörg Müller  
 
 _(*equal contribution)_
 
