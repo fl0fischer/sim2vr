@@ -1,64 +1,85 @@
 # SIM2VR: Towards Automated Biomechanical Testing in VR
 
-SIM2VR is a novel system for **integrating biomechanical simulations directly into Unity applications**.
+SIM2VR is an extension of the [User-in-the-Box (UitB) framework](https://github.com/aikkala/user-in-the-box) for **integrating biomechanical simulations directly into Unity applications**. This is achieved by running the user simulation and the Unity application in separate processes (in parallel), while ensuring their temporal and spatial synchronicity.
 
-By ensuring that real and simulated users see and control exactly the same virtual environment, it increases the ecological validity of simulation-based predictions.  
-SIM2VR can be used to predict and analyse differences in performance and ergonomics between specific design choices, and to anticipate potential user strategies for a given VR application.
+By integrating biomechanical simulations into Unity applications, SIM2VR enables real and simulated users to perceive and control exactly the same virtual environment. This increases the ecological validity of simulation-based predictions for VR interaction. SIM2VR can be used to predict and analyse differences in performance and ergonomics between specific design choices, and to anticipate potential user strategies for a given VR application.
+
+Paper link: [SIM2VR: Towards Automated Biomechanical Testing in VR (UIST2024)](todo:add-link)
+
 
 ## Requirements and Scope
-SIM2VR requires that the Unity application has an OpenXR plugin (min. version 1.5.3) to handle the VR device interaction.  
-For the user simulation, any simulated user instance created within the [UitB framework](https://github.com/aikkala/user-in-the-box) can be used. Note that this requires the biomechanical model to be implemented in the [MuJoCo physics engine](https://mujoco.org/).
+
+SIM2VR requires that the Unity application has an OpenXR plugin (min. version 1.5.3) to handle the VR device interaction. For the user simulation, any simulated user instance created within the UitB framework can be used. Note that this requires the biomechanical model to be implemented in the [MuJoCo physics engine](https://mujoco.org/).
 
 The current focus of SIM2VR is on movement-based VR interaction using a VR controller and an HMD. Since the UitB framework only includes visual and proprioceptive sensor modalities, SIM2VR is currently limited to the transmission of visual output signals from the VR application to the simulated user. However, we plan to support other feedback modalities such as auditory and haptic output in the future.
 
+
+## Extending the UitB Framework
+
+<img src="figs/sim2vr_components.png" alt="This image depicts how the SIM2VR components fit within the User-in-the-Box framework and extend it to Unity applications" width="800"/>
+
+SIM2VR provides two new components to the UitB framework -- **UnityEnv** and **UnityHeadset** -- and a Unity asset **SIM2VR Asset**. 
+
+- UnityEnv is a UitB task module that enables Unity applications to be used as the simulation environment. Specifically, UnityEnv communicates with the SIM2VR asset and exchanges information between the simulations: UnityEnv sends the HMD and controllers' pose to the Unity application, and receives the image rendered in the virtual HMD, a scalar reward, and other stateful information. Additionally, the UnityEnv module equips the biomechanical model with the virtual HMD and controllers.
+
+- UnityHeadset is a UitB perception module that receives the visual observation from the Unity application through the UnityEnv module. UnityHeadset is a simple perception module that can e.g. filter color channels and stack multiple observations to allow the control policy to infer movement.
+
+- SIM2VR Asset handles the communication with the UnityEnv task module, and provides an RLEnv class. This class must be inherited and implemented separately for each Unity application. All necessary functionality required for the RL training (e.g. proper initialisation and reseting, as well as the reward function) need to be defined within the inherited class.
+
+
 ## Step-by-Step Guide
+
 In the following, we demonstrate how SIM2VR can be used to generate user simulations for a given Unity application.
-As an example, we consider the [Beat Saber](https://beatsaber.com/)-style game implemented in the [VR Beats Kit](https://assetstore.unity.com/packages/templates/systems/vr-beats-kit-168243), which is freely available on the Unity Asset Store (from here on referred to as _Saber Game_).
+As an example, we consider the [Beat Saber](https://beatsaber.com/)-style game implemented in the [VR Beats Kit](https://assetstore.unity.com/packages/templates/systems/vr-beats-kit-168243), which is freely available on the Unity Asset Store (from here on referred to as _VR Beats_).
 
-### Initial Steps
-First, the SIM2VR Asset must be imported into the desired Unity project.
-After adding the _sim2vr_ prefab as a game object to the desired scene, the _SimulatedUser_ game object needs to be connected to the VR Controllers and Main Camera provided by OpenXR.
-The _sim2vr_ prefab comprises three distinct game objects: _SimulatedUser_, _RLEnv_ and _Logger_.  
 
-The _SimulatedUser_ must be given access to the Transforms of the _LeftHandController_/_RightHandController_ and the _MainCamera_ of OpenXR by connecting them to the corresponding fields.
+### Step 0: Initialisation
 
-### Defining the Game Reward and Reset
-To run user simulations with the Unity application, appropriate reward and reset methods need to be defined. 
-For this purpose, an application-specific class must be inherited from the _RLEnv_ class provided by the SIM2VR asset.  
-Note that all game objects and variables relevant for the reward calculation must be accessible from this class.
-For example, if the distance of a game object to the controller is used as a reward, the game object's and controller's positions should be fields of this class.
+0. Set up your Unity project for VR development with OpenXR. Follow e.g. [this video](https://www.youtube.com/watch?v=_WlykP-tYZg). Most importantly, you need to install the _OpenXR Plugin_ (min version 1.5.3) and _XR Interaction Toolkit_ through the Package Manager (_Window_ -> _Package Manager_).
 
-The task-specific reward needs to be computed by the method _CalculateReward_ and stored in the variable _\_reward_. If a game score is provided by the VR application, this score can be directly used as reward (note that game scores typically accumulate points throughout the round, so the reward signal should be set to the increase in that score since the last frame). If necessary, the typically sparse game reward can be augmented by additional, more sophisticated terms, as described in the accompanying paper.  
-In the Saber Game, we set the reward to the increase in the game score since the last frame.
+1. Clone or download this repository, and import the _"sim2vr.unitypackage"_ into your Unity project (_Assets_ -> _Import Package_ -> _Custom Package ..._).
 
-The method _Reset_ needs to ensure that the entire scene is reset to a (reproducible) initial state at the end of each round. This usually includes the destruction of game objects created during runtime and resetting private variables required to compute the game reward. All code related to resetting the game reward can be summarised in the method _InitialiseReward_.  
-Preparations for the next round, such as choosing a game level or defining variables required for the reward calculations, can also be defined here.
-Actions and settings that should be taken only once when starting the game can be defined in the method _InitialiseApplication_.  
-For the Saber Game, it is sufficient to simply invoke the existing _onRestart_ game event and set the current game score for reward calculation to 0 in the method _Reset_, which triggers the restart of the level in the _VR\_BeatManager_ and the _ScoreManager_.
+1. Add the _XR Origin_ rig through _GameObject_ -> _XR_ -> _XR Origin (Action-based)_
 
-Finally, the Simulated User needs to be informed about whether the current round has ended, i.e., the variable _\_isFinished_ needs to be updated accordingly within the method _UpdateIsFinished_.  
-For the Saber Game, we can make use of the method _getIsGameRunning_ of the _VR\_BeatManager_ instance.
+2. Add the _sim2vr_ prefab as a game object into the desired scene.
 
-### Further Adjustments
-Since including an application- and task-dependent time feature as "stateful" information in the observation may help for training the RL agent, the RLEnv class provides a method _GetTimeFeature_ to define this time feature.  
-For the Saber Game, we set this to the relative in-game time normalized to values between -1 and 1, as this might help the RL Agent anticipating the deterministic target sequence for a given song. Note that this requires access to the maximum duration of the round.
+3. Connect the  _SimulatedUser_ parameters to the _LeftHand Controller_ and _RightHand Controller_ and _Main Camera_ of the _XR Origin_ rig, and to the _RLEnv_ of the _sim2vr_ game object.
 
-Often, a Unity application commences with an initial scene, such as a menu, rather than directly starting the game.
-As SIM2VR does not provide a mechanism to switch scenes, this needs to be manually implemented.  
-In our example, we simply added a game object containing a script that selects the appropriate level and transitions to the _SaberStyle_ scene at the startup of the application.
 
-Since the biomechanical models currently provided by UitB are limited to movements of the right arm, we modify the game to spawn targets for the right saber only. Also, since the Simulated User is unable to duck, we removed the walls that moved towards the player, as these would have ended the game immediately if they were touched by the HMD.
+### Step 1: Defining the Game Reward and Reset
 
-The _Logger_ is optional and can be used to log individual trials, for example, when collecting data from a user study. 
-If this is not intended, it should be disabled.
+To train a Simulated User interact with the Unity application, appropriate reward and reset methods need to be defined. For this purpose, an application-specific class must be inherited from the _RLEnv_ class provided by the SIM2VR asset. Note that all game objects and variables relevant for the reward calculation must be accessible from this class. For example, if the distance of a game object to the controller is used as a reward, the game object's and controller's positions should be fields of this class.
 
-### Building the Unity Application
-From the resulting Unity project augmented by the SIM2VR scripts and game objects, a standalone Unity Application can be built. This application is then used as interaction environment for the simulated user during training.
+The task-specific reward needs to be computed by the method _CalculateReward_ and stored in the variable _\_reward_. If a game score is provided by the VR application, this score can be directly used as reward (note that game scores typically accumulate points throughout the round, so the reward signal should be set to the increase in that score since the last frame). If necessary, the typically sparse game reward can be augmented by additional, more sophisticated terms, as described in the accompanying paper. In the VR Beats game, a player receives rewards for hitting approaching boxes. Each hit is worth 50-200 points, depending on the hit speed and direction. As the rewards accumulate throughout the game play, we use the difference between successive frames as the RL training reward.
 
-### Defining the Simulated User in UitB
-After preparing the VR Interaction environment for running user simulations, a simulated user instance needs to be created in UitB. 
+The method _Reset_ needs to ensure that the entire scene is reset to a (reproducible) initial state at the end of each round (i.e., RL training episode). This usually includes the destruction of game objects created during runtime and resetting private variables required to compute the game reward. All code related to resetting the game reward should be defined in the method _InitialiseReward_. Preparations for the next round, such as choosing a game level or defining variables required for the reward calculations, can also be defined here. Actions and settings that should be taken only once when starting the game can be defined in the method _InitialiseApplication_. For the VR Beats game, it is sufficient to simply invoke the existing _onRestart_ game event and set the current game score for reward calculation to 0 in the method _Reset_, which triggers the restart of the level in the _VR\_BeatManager_ and the _ScoreManager_.
 
-All relevant information can be defined in the YAML config file (see [here](https://github.com/aikkala/user-in-the-box/tree/main?tab=readme-ov-file#building-a-simulator)).
+Finally, the Simulated User needs to be informed about whether the current episode has ended, i.e., the variable _\_isFinished_ needs to be updated accordingly within the method _UpdateIsFinished_. This is the approapriate method for logging other variables of interest as well, by saving them into the _\_logDict_ dictionary, which will be then uploaded into Weights&Biases. For the Beats VR game, we can make use of the method _getIsGameRunning_ of the _VR\_BeatManager_ instance to track whether the episode has ended.
+
+The _GetTimeFeature_ method can be implemented to pass information related to elapsed time or time remaining in the episode to the Simulated User. 
+
+
+### Step 2: Further Adjustments
+
+Since including an application- and task-dependent time feature (i.e., information regarding elapsed time or time remaining in the episode) as "stateful" information in the observation may help in training the Simulated User, the RLEnv class provides a method _GetTimeFeature_ to define this time feature. Note that implementing this method for deterministic environments may lead to the Simulated User exploiting this information instead of e.g. relying on visual perceptions. As the Beats VR game is such a deterministic environment, we did not define the time feature.
+
+Often, a Unity application commences with an initial scene, such as a menu, rather than directly starting the game. As SIM2VR does not provide a mechanism to switch scenes, this needs to be manually implemented. If possible, this should be implemented in the _Reset_ function, otherwise, the application source code may need to be modified.
+
+As the biomechanical model, we use a bimanual version of the [_MoBL__ARMS_ model](https://github.com/aikkala/user-in-the-box/tree/main/uitb/bm_models/mobl_arms_bimanual_motor). Furthermore, to speed up the training, we replaced the muscle actuators with joint-wise torque actuators. Additionally, the Beats VR game includes walls that approach the player and must be dodged. As _MoBL__ARMS_ model is a static upper body models, we chose to play only the first 10 seconds of the game, which do not contain these walls. The first 10 seconds include four boxes that approach the player and must be hit; if a box passes by the player without a hit, the game terminates.
+
+The _Logger_ is optional and can be used to log individual trials, for example, when collecting data from a user study. It needs to be defined separately for each application, as the logged variables will be different.
+
+
+### Step 3: Building the Unity Application
+
+From the resulting Unity project augmented by the SIM2VR scripts and game objects, a standalone Unity Application can be built. This application is then used as interaction environment for the UitB Simulated User during training.
+
+
+### Step 4: Defining the Simulated User in UitB
+
+After preparing the VR Interaction environment for running user simulations, a Simulated User instance needs to be created in UitB. 
+
+All relevant information can be defined in the YAML config file (see [here](https://github.com/aikkala/user-in-the-box/tree/main?tab=readme-ov-file#building-a-simulator)). The config file used for the Beats VR game can be found [here](https://github.com/aikkala/user-in-the-box/blob/main/uitb/configs/mobl_arms_beatsvr_bimanual.yaml)
 This mainly involves:
 - selecting a biomechanical user model (_bm\_model_), including the effort model (_effort\_model_) and effort cost weight (_weight_)
 - selecting perception modules, including the  _vision.UnityHeadset_  module provided by SIM2VR (_perception\_modules_)
@@ -71,25 +92,31 @@ Other optional parameters include:
 - the position and orientation of the HMD (_headset\_relpose_) relative to a body part included in the biomechanical user model (_headset\_body_)
 - RL hyperparameters (e.g., network size, time steps, batch size, etc.)
 
-For the Saber Game, we use the muscle-actuated right arm and upper body model _MoblArmsWrist_ with neural effort costs, which penalize the sum of the squared muscle control signals at each time step. As perception modules, we use the default proprioception module and the _UnityHeadset_ vision module provided by SIM2VR. The former allows the simulated user to infer joint angles, velocities and accelerations, as well as muscle activations and index finger position. The latter is configured to include red and blue color channels of the RGB-D image, and stacked with a delayed (0.2 seconds prior) visual observation to allow the control policy to infer object movement.
+For the Beats VR game, we use the _MoblArmsBimanualMotor_ biomechanical model with neural effort costs, which penalize the sum of the squared muscle control signals at each time step. As perception modules, we use the default proprioception module and the _UnityHeadset_ vision module provided by SIM2VR. The former allows the simulated user to infer joint angles, velocities and accelerations, as well as muscle activations and index finger position. The latter is configured to include red color and depth channels of the RGB-D image, and stacked with a delayed (0.2 seconds prior) visual observation to allow the control policy to distinguish between left and right arm targets, and to infer object movement.
 
-### Training and Evaluation
+
+### Step 5: Training and Evaluation
+
 The training can then be started by running the UitB Python script [_uitb/train/trainer.py_](https://github.com/aikkala/user-in-the-box/blob/main/uitb/train/trainer.py) and passing the configuration file as an argument.
 
 Similarly, a trained simulator can be evaluated using the standard UitB script [_uitb/test/evaluator.py_](https://github.com/aikkala/user-in-the-box/blob/main/uitb/test/evaluator.py). The script runs the simulator/policy and optionally saves log files and videos of the evaluated episodes.
 
 For better logging and evaluation, we recommend to connect a [Weights and Biases](https://wandb.ai/) account to the trainer.
 
+For the Beats VR game, we trained three simulated users with neural effort cost weights 0.001, 0.01 and 0.05. This was done to demonstrate how the behaviour of the simulated user can range from an "explorative" or "enthusiastic" player to a more "lazy" player. The simulated users learned to hit the incoming targets using different strategies depending on the effort cost weight. For instance, the simulated user trained with the highest effort cost weight (0.05) learned to do only the bare minimum to move its arms and hit the incoming targets. In particular, it hit the targets by relying mostly on wrist movements, suggesting that the game design could benefit from modifying the target trajectories to force the players to move their arms more. The simulated users trained with lower effort costs learned to move their arms more, with the lowest effort leading to a policy where the arm movements are exaggerated. 
+
+TODO: add videos
+
 ## Contributors
-Florian Fischer*  
-Aleksi Ikkala*  
-Markus Klar  
-Arthur Fleig  
-Miroslav Bachinski  
-Roderick Murray-Smith  
-Perttu Hämäläinen  
-Antti Oulasvirta  
-Jörg Müller  
+Florian Fischer*
+Aleksi Ikkala*
+Markus Klar
+Arthur Fleig
+Miroslav Bachinski
+Roderick Murray-Smith
+Perttu Hämäläinen
+Antti Oulasvirta
+Jörg Müller
 
 _(*equal contribution)_
 
