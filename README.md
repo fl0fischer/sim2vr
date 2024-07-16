@@ -9,7 +9,7 @@ Paper link: [SIM2VR: Towards Automated Biomechanical Testing in VR (UIST2024)](t
 
 ## Requirements and Scope
 
-SIM2VR requires that the Unity application has an OpenXR plugin (min. version 1.5.3) to handle the VR device interaction. For the user simulation, any simulated user instance created within the UitB framework can be used. Note that this requires the biomechanical model to be implemented in the [MuJoCo physics engine](https://mujoco.org/).
+SIM2VR requires that the Unity application has an OpenXR plugin (min. version 1.5.3) to handle the VR device interaction. For the user simulation, any simulated user instance created within the [UitB framework](https://github.com/aikkala/user-in-the-box) can be used (min. version 2.0). Note that this requires the biomechanical model to be implemented in the [MuJoCo physics engine](https://mujoco.org/).
 
 The current focus of SIM2VR is on movement-based VR interaction using VR controllers and an HMD. Since the UitB framework only includes visual and proprioceptive sensor modalities, SIM2VR is currently limited to the transmission of visual output signals from the VR application to the simulated user. However, we plan to support other feedback modalities such as auditory and haptic output in the future.
 
@@ -75,7 +75,7 @@ From the resulting Unity project augmented by the SIM2VR scripts and game object
 
 ### Step 5: Defining the Simulated User in UitB
 
-After preparing the VR Interaction environment for running user simulations, a simulator needs to be created in UitB. 
+After preparing the VR Interaction environment for running user simulations, a simulator needs to be created in [UitB](https://github.com/aikkala/user-in-the-box). 
 
 All relevant information can be defined in the YAML config file (see [here](https://github.com/aikkala/user-in-the-box/tree/main?tab=readme-ov-file#building-a-simulator)). The config file used for the Beats VR game can be found [here](https://github.com/aikkala/user-in-the-box/blob/main/uitb/configs/mobl_arms_beatsvr_bimanual.yaml). Defining the YAML mainly involves:
 - selecting a biomechanical user model (_bm\_model_), including the effort model (_effort\_model_) and effort cost weight (_weight_)
