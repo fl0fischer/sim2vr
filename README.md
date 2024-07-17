@@ -4,7 +4,7 @@ SIM2VR is an extension of the [User-in-the-Box (UitB) framework](https://github.
 
 By integrating biomechanical simulations into Unity applications, SIM2VR enables real and simulated users to perceive and control exactly the same virtual environment. This increases the ecological validity of simulation-based predictions for VR interaction. SIM2VR can be used to predict and analyse differences in performance and ergonomics between specific design choices, and to anticipate potential user strategies for a given VR application.
 
-Paper link: [SIM2VR: Towards Automated Biomechanical Testing in VR (UIST2024)](todo:add-link)
+Paper link: [SIM2VR: Towards Automated Biomechanical Testing in VR (UIST 2024)](https://doi.org/10.1145/3654777.3676452)
 
 
 ## Requirements and Scope
