@@ -119,4 +119,16 @@ _(*equal contribution)_
 
 ## Citation
 Please cite the following paper when using SIM2VR:
-**TODO** add paper link
+
+author = {Fischer, Florian and Ikkala, Aleksi and Klar, Markus and Fleig, Arthur and Bachinski, Miroslav and Murray-Smith, Roderick and H\"{a}m\"{a}l\"{a}inen, Perttu and Oulasvirta, Antti and M\"{u}ller, J\"{o}rg},
+title = {SIM2VR: Towards Automated Biomechanical Testing in VR},
+year = {2024},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3654777.3676452},
+doi = {10.1145/3654777.3676452},
+booktitle = {Proceedings of the 37th Annual ACM Symposium on User Interface Software and Technology},
+numpages = {15},
+location = {Pittsburgh, PA, USA},
+series = {UIST '24}}
+```
