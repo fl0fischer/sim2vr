@@ -104,6 +104,12 @@ For the Beats VR game, we trained three simulated users with neural effort cost 
 
 TODO: add videos
 
+## Example: Whac-A-Mole
+To train and evaluate simulated users for the Whac-A-Mole Unity game from the SIM2VR paper, please use the "whacamole" config files to be found [here](https://github.com/aikkala/user-in-the-box/blob/main/uitb/configs/). \
+The source code of the game as well as the user data collected from the accompanying VR study can be found in the [Whac-A-Mole repository](https://github.com/aikkala/whac-a-mole).
+
+TODO: add figure/videos
+
 ## Contributors
 Florian Fischer*  
 Aleksi Ikkala*  
