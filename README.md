@@ -7,6 +7,26 @@ By integrating biomechanical simulations into Unity applications, SIM2VR enables
 Paper link: [SIM2VR: Towards Automated Biomechanical Testing in VR (UIST 2024)](https://doi.org/10.1145/3654777.3676452)
 
 
+## Citation
+Please cite the following paper when using SIM2VR:
+
+```
+@inproceedings{FischerIkkala24,
+
+author = {Fischer, Florian and Ikkala, Aleksi and Klar, Markus and Fleig, Arthur and Bachinski, Miroslav and Murray-Smith, Roderick and H\"{a}m\"{a}l\"{a}inen, Perttu and Oulasvirta, Antti and M\"{u}ller, J\"{o}rg},
+title = {SIM2VR: Towards Automated Biomechanical Testing in VR},
+year = {2024},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3654777.3676452},
+doi = {10.1145/3654777.3676452},
+booktitle = {Proceedings of the 37th Annual ACM Symposium on User Interface Software and Technology},
+numpages = {15},
+location = {Pittsburgh, PA, USA},
+series = {UIST '24}}
+```
+
+
 ## Requirements and Scope
 
 SIM2VR requires that the Unity application has an OpenXR plugin (min. version 1.5.3) to handle the VR device interaction. For the user simulation, any simulated user instance created within the [UitB framework](https://github.com/aikkala/user-in-the-box) can be used (min. version 2.0). Note that this requires the biomechanical model to be implemented in the [MuJoCo physics engine](https://mujoco.org/).
@@ -110,6 +130,10 @@ The source code of the game as well as the user data collected from the accompan
 
 TODO: add figure/videos
 
+## Additional Tools
+Both the _Reach Envelope_ and the _Reward Scaling_ tool described in the SIM2VR paper are publicly available from the [uitb-tools](https://github.com/aikkala/user-in-the-box/blob/main/uitb/configs/) repo. \
+After installing the `uitb-tools` Python package, the respective Jupyter notebook files can be executed.
+
 ## Contributors
 Florian Fischer*  
 Aleksi Ikkala*  
@@ -122,19 +146,3 @@ Antti Oulasvirta
 Jörg Müller  
 
 _(*equal contribution)_
-
-## Citation
-Please cite the following paper when using SIM2VR:
-
-author = {Fischer, Florian and Ikkala, Aleksi and Klar, Markus and Fleig, Arthur and Bachinski, Miroslav and Murray-Smith, Roderick and H\"{a}m\"{a}l\"{a}inen, Perttu and Oulasvirta, Antti and M\"{u}ller, J\"{o}rg},
-title = {SIM2VR: Towards Automated Biomechanical Testing in VR},
-year = {2024},
-publisher = {Association for Computing Machinery},
-address = {New York, NY, USA},
-url = {https://doi.org/10.1145/3654777.3676452},
-doi = {10.1145/3654777.3676452},
-booktitle = {Proceedings of the 37th Annual ACM Symposium on User Interface Software and Technology},
-numpages = {15},
-location = {Pittsburgh, PA, USA},
-series = {UIST '24}}
-```
