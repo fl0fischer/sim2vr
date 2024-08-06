@@ -131,7 +131,7 @@ The source code of the game as well as the user data collected from the accompan
 TODO: add figure/videos
 
 ## Additional Tools
-Both the _Reach Envelope_ and the _Reward Scaling_ tool described in the SIM2VR paper are publicly available from the [uitb-tools](https://github.com/aikkala/user-in-the-box/blob/main/uitb/configs/) repo. \
+Both the _Reach Envelope_ and the _Reward Scaling_ tool described in the SIM2VR paper are publicly available from the [uitb-tools](https://github.com/fl0fischer/uitb-tools) repo. \
 After installing the `uitb-tools` Python package, the respective Jupyter notebook files can be executed.
 
 ## Contributors
