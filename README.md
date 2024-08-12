@@ -72,7 +72,7 @@ To train a simulated user interact with the Unity application, appropriate rewar
 
 The task-specific reward needs to be computed by the method _CalculateReward_ and stored in the variable _\_reward_. If a game score is provided by the VR application, this score can be directly used as reward (note that game scores typically accumulate points throughout the round, so the reward signal should be set to the increase in that score since the last frame). If necessary, the typically sparse game reward can be augmented by additional, more sophisticated terms, as described in the accompanying paper. In the VR Beats game, a player receives rewards for hitting approaching boxes. Each hit is worth 50-200 points, depending on the hit speed and direction. As the rewards accumulate throughout the game play, we use the difference between successive frames as the RL training reward.
 
-The method _Reset_ needs to ensure that the entire scene is reset to a (reproducible) initial state at the end of each round (i.e., RL training episode). This usually includes the destruction of game objects created during runtime and resetting variables required to compute the game reward. All code related to resetting the game reward should be defined in the method _InitialiseReward_. Preparations for the next round, such as choosing a game level or defining variables required for the reward calculations, can also be defined here. Actions and settings that should be taken only once when starting the game can be defined in the method _InitialiseApplication_. For the VR Beats game, it is sufficient to simply invoke the existing _onRestart_ game event, which triggers the restart of the level in the _VR\_BeatManager_ and the _ScoreManager_, and set the current game score for reward calculation to 0 in the method _Reset_
+The method _Reset_ needs to ensure that the entire scene is reset to a (reproducible) initial state at the end of each round (i.e., RL training episode). This usually includes the destruction of game objects created during runtime and resetting variables required to compute the game reward. All code related to resetting the game reward should be defined in the method _InitialiseReward_. Preparations for the next round, such as choosing a game level or defining variables required for the reward calculations, can also be defined here. Actions and settings that should be taken only once when starting the game can be defined in the method _InitialiseGame_. For the VR Beats game, it is sufficient to simply invoke the existing _onRestart_ game event, which triggers the restart of the level in the _VR\_BeatManager_ and the _ScoreManager_, and set the current game score for reward calculation to 0 in the method _Reset_
 
 Finally, the simulated user needs to be informed about whether the current episode has ended, i.e., the variable _\_isFinished_ needs to be updated accordingly within the method _UpdateIsFinished_. This is the approapriate method for logging other variables of interest as well, by saving them into the _\_logDict_ dictionary, which will be then uploaded into Weights&Biases. In the Beats VR game, we make use of the method _getIsGameRunning_ of the _VR\_BeatManager_ instance to track whether the episode has ended.
 
@@ -120,19 +120,42 @@ Similarly, a trained simulator can be evaluated using the standard UitB script [
 
 For better logging and evaluation, we recommend to connect a [Weights and Biases](https://wandb.ai/) account to the trainer.
 
-For the Beats VR game, we trained three simulated users with neural effort cost weights 0.001, 0.01 and 0.05. This was done to demonstrate how the behaviour of the simulated user can range from an "explorative" or "enthusiastic" player to a more "lazy" player. The simulated users learned to hit the incoming targets using different strategies depending on the effort cost weight. For instance, the simulated user trained with the highest effort cost weight (0.05) learned to do only the bare minimum to move its arms and hit the incoming targets. In particular, it hit the targets by relying mostly on wrist movements, suggesting that the game design could benefit from modifying the target trajectories to force the players to move their arms more. The simulated users trained with lower effort costs learned to move their arms more, with the lowest effort leading to a policy where the arm movements are exaggerated. 
+For the Beats VR game, we trained three simulated users with neural effort cost weights 0.001, 0.01 and 0.05. This was done to demonstrate how the behaviour of the simulated user can range from an "explorative" or "enthusiastic" player to a more "lazy" player. The simulated users learned to hit the incoming targets using different strategies depending on the effort cost weight. For instance, the simulated user trained with the highest effort cost weight (0.05) learned to do only the bare minimum to move its arms and hit the incoming targets. In particular, it hit the targets by relying mostly on wrist movements, suggesting that the game design could benefit from modifying the target trajectories to force the players to move their arms more. The simulated users trained with lower effort costs learned to move their arms more, with the lowest effort leading to a policy where the arm movements are exaggerated.
 
-TODO: add videos
+The trained simulators can be found in the [UitB repo](https://github.com/aikkala/user-in-the-box/tree/main/simulators), named `beats_vr_*` where the suffix indicates the neural effort cost magnitude. Below you can find example videos from the trained simulators. The right-hand side videos show the game play from an external camera, and do not represent what the simulated user sees.
+
+#### beatsvr_neural_1e3
+
+![](figs/beatsvr_neural_1e3.gif)
+
+#### beatsvr_neural_1e2
+
+![](figs/beatsvr_neural_1e2.gif)
+
+#### beatsvr_neural_5e2
+
+![](figs/beatsvr_neural_5e2.gif)
 
 ## Example: Whac-A-Mole
-To train and evaluate simulated users for the Whac-A-Mole Unity game from the SIM2VR paper, please use the "whacamole" config files to be found [here](https://github.com/aikkala/user-in-the-box/blob/main/uitb/configs/). \
+To train and evaluate simulated users for the Whac-A-Mole Unity game from the SIM2VR paper, please use the `mobl_arms_whacamole_*` config files to be found [here](https://github.com/aikkala/user-in-the-box/blob/main/uitb/configs/). The trained simulators can be found in the [UitB repo](https://github.com/aikkala/user-in-the-box/tree/main/simulators); see below for example videos from the trained simulators. Right-hand side of the videos show the camera feed from the UnityHeadset camera to illustrate how the simulated user perceives the environment. Note that the head of the simulated user is not tilted for the different target area placements, but the camera angle is (incorporating neck movements into this model is left for future work).
+
 The source code of the game as well as the user data collected from the accompanying VR study can be found in the [Whac-A-Mole repository](https://github.com/aikkala/whac-a-mole).
 
-TODO: add figure/videos
+#### whacamole_adaptive_constrained: high / medium / constrained
+
+![](figs/whacamole_adaptive_constrained_high.gif)
+
+#### whacamole_adaptive_constrained: mid / medium / constrained
+
+![](figs/whacamole_adaptive_constrained_mid.gif)
+
+#### whacamole_adaptive_constrained: low / medium / constrained
+
+![](figs/whacamole_adaptive_constrained_low.gif)
+
 
 ## Additional Tools
-Both the _Reach Envelope_ and the _Reward Scaling_ tool described in the SIM2VR paper are publicly available from the [uitb-tools](https://github.com/fl0fischer/uitb-tools) repo. \
-After installing the `uitb-tools` Python package, the respective Jupyter notebook files can be executed.
+Both the _Reach Envelope_ and the _Reward Scaling_ tool described in the SIM2VR paper are publicly available from the [uitb-tools](https://github.com/fl0fischer/uitb-tools) repo. After installing the `uitb-tools` Python package, the respective Jupyter notebook files can be executed.
 
 ## Contributors
 Florian Fischer*  
