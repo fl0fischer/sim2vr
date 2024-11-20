@@ -69,6 +69,7 @@ namespace UserInTheBox
         public ZmqServer(string port, int timeOutSeconds)
         {
             Debug.Log("Starting up ZMQ server at tcp://localhost:" + port);
+            AsyncIO.ForceDotNet.Force();  //required for Windows builds and running Unity Editor in Windows; adapted from https://github.com/zeromq/netmq/issues/836
             _socket = new ResponseSocket("@tcp://localhost:" + port);
             _gameObservation = new Observation();
             _timeOutSeconds = timeOutSeconds;
